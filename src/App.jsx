@@ -1,15 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 
-const url = "https://api.themoviedb.org/3/authentication";
-const options = { method: "GET", headers: { accept: "application/json" } };
-
-function getMovies() {
-  fetch(url, options)
-    .then((res) => res.json())
-    .then((json) => console.log(json))
-    .catch((err) => console.error(err));
-}
+const token =
+  "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1MWY1NjU1NjNlM2ZjYmIyMWE3YThkMmU5NTM3NDRiOSIsIm5iZiI6MTc2OTcyMzYzNS4yNTIsInN1YiI6IjY5N2JkNmYzOWZiZWNmY2RmMzJhMzE0ZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.Bvc1Q0wgmXZd0eeGRj2CsZ7JkUwJbsgAXG9x0SjFwjI";
+const options = {
+  method: "GET",
+  headers: {
+    accept: "application/json",
+    Authorization: "Bearer " + token,
+  },
+};
 
 const tempMovieData = [
   {
@@ -60,11 +60,10 @@ const tempWatchedData = [
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
-
-function Main() {
+function Main({ movies }) {
   return (
     <main className="main">
-      <Movies />
+      <Movies movies={movies} />
       <WatchedMovies />
     </main>
   );
@@ -136,9 +135,9 @@ function WatchedMovies() {
   );
 }
 
-function Movies() {
-  const [movies, setMovies] = useState(tempMovieData);
+function Movies({ movies }) {
   const [isOpen1, setIsOpen1] = useState(true);
+
   return (
     <div className="box">
       <button
@@ -150,9 +149,9 @@ function Movies() {
       {isOpen1 && (
         <ul className="list">
           {movies?.map((movie) => (
-            <li key={movie.imdbID}>
-              <img src={movie.Poster} alt={`${movie.Title} poster`} />
-              <h3>{movie.Title}</h3>
+            <li key={movie.id}>
+              <img src={movie.img} alt={`${movie.name} poster`} />
+              <h3>{movie.name}</h3>
               <p>
                 <span>🗓</span>
                 <span>{movie.Year}</span>
@@ -165,8 +164,7 @@ function Movies() {
   );
 }
 
-function NavBar() {
-  const [query, setQuery] = useState("");
+function NavBar({ query, onSearch }) {
   return (
     <div className="nav-bar">
       <div className="logo">
@@ -179,7 +177,9 @@ function NavBar() {
         type="text"
         placeholder="Search movies..."
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={(e) => {
+          onSearch(e.target.value);
+        }}
       />
       <p className="num-results">Found X movies</p>
     </div>
@@ -187,12 +187,32 @@ function NavBar() {
 }
 
 function App() {
-  const [count, setCount] = useState(0);
-
+  const [query, setQuery] = useState("");
+  const [movies, setMovies] = useState([]);
+  useEffect(() => {
+    const url =
+      "https://api.themoviedb.org/3/search/movie?query=" +
+      query +
+      "&include_adult=false&language=en-US&page=1";
+    fetch(url, options)
+      .then((res) => res.json())
+      .then((json) => {
+        console.log(json.results);
+        const imgUrl = "https://image.tmdb.org/t/p/original";
+        const movies = json.results.map((item) => ({
+          id: item.id,
+          name: item.original_title,
+          img: imgUrl + item.poster_path,
+          Year: item.release_date,
+        }));
+        setMovies(movies);
+      })
+      .catch((err) => console.error(err));
+  }, [query]);
   return (
     <div>
-      <NavBar />
-      <Main />
+      <NavBar onSearch={setQuery} query={query} />
+      <Main movies={movies} />
     </div>
   );
 }
