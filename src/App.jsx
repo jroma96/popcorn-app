@@ -60,21 +60,21 @@ const tempWatchedData = [
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
-function Main({ movies }) {
+
+function Main({ movies, watchedMovies, onAddMovie }) {
   return (
     <main className="main">
-      <Movies movies={movies} />
-      <WatchedMovies />
+      <Movies movies={movies} onAddMovie={onAddMovie} />
+      <WatchedMovies watchedMovies={watchedMovies} />
     </main>
   );
 }
 
-function WatchedMovies() {
+function WatchedMovies({ watchedMovies }) {
   const [isOpen2, setIsOpen2] = useState(true);
-  const [watched, setWatched] = useState(tempWatchedData);
-  const avgImdbRating = average(watched.map((movie) => movie.imdbRating));
-  const avgUserRating = average(watched.map((movie) => movie.userRating));
-  const avgRuntime = average(watched.map((movie) => movie.runtime));
+  console.log(watchedMovies);
+  const avgImdbRating = average(watchedMovies.map((movie) => movie.imdbRating));
+  const avgUserRating = average(watchedMovies.map((movie) => movie.userRating));
   return (
     <div className="box">
       <button
@@ -90,7 +90,7 @@ function WatchedMovies() {
             <div>
               <p>
                 <span>#️⃣</span>
-                <span>{watched.length} movies</span>
+                <span>{watchedMovies.length} movies</span>
               </p>
               <p>
                 <span>⭐️</span>
@@ -100,18 +100,14 @@ function WatchedMovies() {
                 <span>🌟</span>
                 <span>{avgUserRating}</span>
               </p>
-              <p>
-                <span>⏳</span>
-                <span>{avgRuntime} min</span>
-              </p>
             </div>
           </div>
 
           <ul className="list">
-            {watched.map((movie) => (
-              <li key={movie.imdbID}>
-                <img src={movie.Poster} alt={`${movie.Title} poster`} />
-                <h3>{movie.Title}</h3>
+            {watchedMovies.map((movie) => (
+              <li key={movie.id}>
+                <img src={movie.img} alt={`${movie.name} poster`} />
+                <h3>{movie.name}</h3>
                 <div>
                   <p>
                     <span>⭐️</span>
@@ -120,10 +116,6 @@ function WatchedMovies() {
                   <p>
                     <span>🌟</span>
                     <span>{movie.userRating}</span>
-                  </p>
-                  <p>
-                    <span>⏳</span>
-                    <span>{movie.runtime} min</span>
                   </p>
                 </div>
               </li>
@@ -135,7 +127,7 @@ function WatchedMovies() {
   );
 }
 
-function Movies({ movies }) {
+function Movies({ movies, onAddMovie }) {
   const [isOpen1, setIsOpen1] = useState(true);
 
   return (
@@ -151,7 +143,24 @@ function Movies({ movies }) {
           {movies?.map((movie) => (
             <li key={movie.id}>
               <img src={movie.img} alt={`${movie.name} poster`} />
-              <h3>{movie.name}</h3>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-around",
+                }}
+              >
+                <h3 style={{ alignContent: "center", textAlign: "center" }}>
+                  {movie.name}
+                </h3>
+                <button
+                  className="movieAdd"
+                  title="Add movie"
+                  onClick={() => onAddMovie(movie)}
+                >
+                  +
+                </button>
+              </div>
               <p>
                 <span>🗓</span>
                 <span>{movie.Year}</span>
@@ -189,6 +198,11 @@ function NavBar({ query, onSearch }) {
 function App() {
   const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
+  const [watched, setWatched] = useState([]);
+
+  function handleAddMovie(movie) {
+    setWatched((arr) => [...arr, movie]);
+  }
   useEffect(() => {
     const url =
       "https://api.themoviedb.org/3/search/movie?query=" +
@@ -203,7 +217,9 @@ function App() {
           id: item.id,
           name: item.original_title,
           img: imgUrl + item.poster_path,
-          Year: item.release_date,
+          Year: item.release_date.split("-")[0],
+          imdbRating: item.vote_average,
+          userRating: item.popularity,
         }));
         setMovies(movies);
       })
@@ -212,7 +228,11 @@ function App() {
   return (
     <div>
       <NavBar onSearch={setQuery} query={query} />
-      <Main movies={movies} />
+      <Main
+        movies={movies}
+        watchedMovies={watched}
+        onAddMovie={handleAddMovie}
+      />
     </div>
   );
 }
