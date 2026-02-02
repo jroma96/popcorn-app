@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Children } from "react";
 import "./App.css";
 
 const token =
@@ -61,16 +61,8 @@ const tempWatchedData = [
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
-function Main({ movies, watchedMovies, onAddMovie, onRemoveMovie }) {
-  return (
-    <main className="main">
-      <Movies movies={movies} onAddMovie={onAddMovie} />
-      <WatchedMovies
-        watchedMovies={watchedMovies}
-        onRemoveMovie={onRemoveMovie}
-      />
-    </main>
-  );
+function Main({ children }) {
+  return <main className="main">{children}</main>;
 }
 
 function WatchedMovies({ watchedMovies, onRemoveMovie }) {
@@ -255,12 +247,13 @@ function App() {
   return (
     <div>
       <NavBar onSearch={setQuery} query={query} results={movies.length} />
-      <Main
-        movies={movies}
-        watchedMovies={watched}
-        onAddMovie={handleAddMovie}
-        onRemoveMovie={handleRemoveMovie}
-      />
+      <Main>
+        <Movies movies={movies} onAddMovie={handleAddMovie} />
+        <WatchedMovies
+          watchedMovies={watched}
+          onRemoveMovie={handleRemoveMovie}
+        />
+      </Main>
     </div>
   );
 }
