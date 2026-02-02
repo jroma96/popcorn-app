@@ -11,7 +11,7 @@ const options = {
   },
 };
 
-const tempMovieData = [
+/*const tempMovieData = [
   {
     imdbID: "tt1375666",
     Title: "Inception",
@@ -56,7 +56,7 @@ const tempWatchedData = [
     imdbRating: 8.5,
     userRating: 9,
   },
-];
+];*/
 
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -73,8 +73,12 @@ function Main({ movies, watchedMovies, onAddMovie }) {
 function WatchedMovies({ watchedMovies }) {
   const [isOpen2, setIsOpen2] = useState(true);
   console.log(watchedMovies);
-  const avgImdbRating = average(watchedMovies.map((movie) => movie.imdbRating));
-  const avgUserRating = average(watchedMovies.map((movie) => movie.userRating));
+  const avgImdbRating = average(
+    watchedMovies.map((movie) => movie.imdbRating),
+  ).toFixed(2);
+  const avgUserRating = average(
+    watchedMovies.map((movie) => movie.userRating),
+  ).toFixed(2);
   return (
     <div className="box">
       <button
@@ -83,26 +87,25 @@ function WatchedMovies({ watchedMovies }) {
       >
         {isOpen2 ? "–" : "+"}
       </button>
+      <div className="summary">
+        <h2>Movies you watched</h2>
+        <div>
+          <p>
+            <span>#️⃣</span>
+            <span>{watchedMovies.length} movies</span>
+          </p>
+          <p>
+            <span>⭐️</span>
+            <span>{avgImdbRating}</span>
+          </p>
+          <p>
+            <span>🌟</span>
+            <span>{avgUserRating}</span>
+          </p>
+        </div>
+      </div>
       {isOpen2 && (
         <>
-          <div className="summary">
-            <h2>Movies you watched</h2>
-            <div>
-              <p>
-                <span>#️⃣</span>
-                <span>{watchedMovies.length} movies</span>
-              </p>
-              <p>
-                <span>⭐️</span>
-                <span>{avgImdbRating}</span>
-              </p>
-              <p>
-                <span>🌟</span>
-                <span>{avgUserRating}</span>
-              </p>
-            </div>
-          </div>
-
           <ul className="list">
             {watchedMovies.map((movie) => (
               <li key={movie.id}>
@@ -173,7 +176,7 @@ function Movies({ movies, onAddMovie }) {
   );
 }
 
-function NavBar({ query, onSearch }) {
+function NavBar({ query, onSearch, results }) {
   return (
     <div className="nav-bar">
       <div className="logo">
@@ -190,7 +193,7 @@ function NavBar({ query, onSearch }) {
           onSearch(e.target.value);
         }}
       />
-      <p className="num-results">Found X movies</p>
+      <p className="num-results">Found {results} movies</p>
     </div>
   );
 }
@@ -227,7 +230,7 @@ function App() {
   }, [query]);
   return (
     <div>
-      <NavBar onSearch={setQuery} query={query} />
+      <NavBar onSearch={setQuery} query={query} results={movies.length} />
       <Main
         movies={movies}
         watchedMovies={watched}
