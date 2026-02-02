@@ -61,16 +61,19 @@ const tempWatchedData = [
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
-function Main({ movies, watchedMovies, onAddMovie }) {
+function Main({ movies, watchedMovies, onAddMovie, onRemoveMovie }) {
   return (
     <main className="main">
       <Movies movies={movies} onAddMovie={onAddMovie} />
-      <WatchedMovies watchedMovies={watchedMovies} />
+      <WatchedMovies
+        watchedMovies={watchedMovies}
+        onRemoveMovie={onRemoveMovie}
+      />
     </main>
   );
 }
 
-function WatchedMovies({ watchedMovies }) {
+function WatchedMovies({ watchedMovies, onRemoveMovie }) {
   const [isOpen2, setIsOpen2] = useState(true);
   console.log(watchedMovies);
   const avgImdbRating = average(
@@ -110,7 +113,23 @@ function WatchedMovies({ watchedMovies }) {
             {watchedMovies.map((movie) => (
               <li key={movie.id}>
                 <img src={movie.img} alt={`${movie.name} poster`} />
-                <h3>{movie.name}</h3>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-around",
+                  }}
+                >
+                  <h3 style={{ alignContent: "center", textAlign: "center" }}>
+                    {movie.name}
+                  </h3>
+                  <button
+                    className="movieAdd"
+                    onClick={() => onRemoveMovie(movie.id)}
+                  >
+                    -
+                  </button>
+                </div>
                 <div>
                   <p>
                     <span>⭐️</span>
@@ -206,6 +225,11 @@ function App() {
   function handleAddMovie(movie) {
     setWatched((arr) => [...arr, movie]);
   }
+
+  function handleRemoveMovie(id) {
+    setWatched((arr) => arr.filter((item) => item.id != id));
+  }
+
   useEffect(() => {
     const url =
       "https://api.themoviedb.org/3/search/movie?query=" +
@@ -235,6 +259,7 @@ function App() {
         movies={movies}
         watchedMovies={watched}
         onAddMovie={handleAddMovie}
+        onRemoveMovie={handleRemoveMovie}
       />
     </div>
   );
