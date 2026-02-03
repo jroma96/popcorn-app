@@ -66,79 +66,91 @@ function Main({ children }) {
 }
 
 function WatchedMovieList({ movies, onRemoveMovie }) {
-  return movies.map((movie) => (
-    <li key={movie.id}>
-      <img src={movie.img} alt={`${movie.name} poster`} />
-      <div
-        style={{
-          paddingTop: "2vh",
-          display: "grid",
-          gridTemplateRows: "3fr 1fr",
-          alignItems: "center",
-          justifyItems: "center",
-          justifyContent: "space-around",
-          gap: "0px",
-        }}
-      >
-        <h3
+  return movies.length > 0 ? (
+    movies.map((movie) => (
+      <li key={movie.id}>
+        <img src={movie.img} alt={`${movie.name} poster`} />
+        <div
           style={{
-            alignContent: "center",
-            textAlign: "center",
+            paddingTop: "2vh",
+            display: "grid",
+            gridTemplateRows: "3fr 1fr",
+            alignItems: "center",
+            justifyItems: "center",
+            justifyContent: "space-around",
+            gap: "0px",
           }}
         >
-          {movie.name}
-        </h3>
-        <button className="movieAdd" onClick={() => onRemoveMovie(movie.id)}>
-          -
-        </button>
-      </div>
-      <div>
-        <p>
-          <span>⭐️</span>
-          <span>{movie.imdbRating}</span>
-        </p>
-        <p>
-          <span>🌟</span>
-          <span>{movie.userRating}</span>
-        </p>
-      </div>
+          <h3
+            style={{
+              alignContent: "center",
+              textAlign: "center",
+            }}
+          >
+            {movie.name}
+          </h3>
+          <button className="movieAdd" onClick={() => onRemoveMovie(movie.id)}>
+            -
+          </button>
+        </div>
+        <div>
+          <p>
+            <span>⭐️</span>
+            <span>{movie.imdbRating}</span>
+          </p>
+          <p>
+            <span>🌟</span>
+            <span>{movie.userRating}</span>
+          </p>
+        </div>
+      </li>
+    ))
+  ) : (
+    <li>
+      <h1>No Movies Yet</h1>
     </li>
-  ));
+  );
 }
 
 function MovieList({ movies, onAddMovie }) {
-  return movies?.map((movie) => (
-    <li key={movie.id}>
-      <img src={movie.img} alt={`${movie.name} poster`} />
-      <div
-        style={{
-          paddingTop: "2vh",
-          display: "grid",
-          gridTemplateRows: "3fr 1fr",
-          alignItems: "center",
-          justifyItems: "center",
-          justifyContent: "space-around",
-          gap: "0px",
-        }}
-      >
-        <h3 style={{ alignContent: "center", textAlign: "center" }}>
-          {movie.name}
-        </h3>
-        <button
-          style={{ alignContent: "center", textAlign: "center" }}
-          className="movieAdd"
-          title="Add movie"
-          onClick={() => onAddMovie(movie)}
+  return movies.length > 0 ? (
+    movies.map((movie) => (
+      <li key={movie.id}>
+        <img src={movie.img} alt={`${movie.name} poster`} />
+        <div
+          style={{
+            paddingTop: "2vh",
+            display: "grid",
+            gridTemplateRows: "3fr 1fr",
+            alignItems: "center",
+            justifyItems: "center",
+            justifyContent: "space-around",
+            gap: "0px",
+          }}
         >
-          +
-        </button>
-      </div>
-      <p>
-        <span>🗓</span>
-        <span>{movie.Year}</span>
-      </p>
+          <h3 style={{ alignContent: "center", textAlign: "center" }}>
+            {movie.name}
+          </h3>
+          <button
+            style={{ alignContent: "center", textAlign: "center" }}
+            className="movieAdd"
+            title="Add movie"
+            onClick={() => onAddMovie(movie)}
+          >
+            +
+          </button>
+        </div>
+        <p>
+          <span>🗓</span>
+          <span>{movie.Year}</span>
+        </p>
+      </li>
+    ))
+  ) : (
+    <li>
+      <h3>Search for Movies</h3>
     </li>
-  ));
+  );
 }
 
 function Summary({ avgImdbRating, avgUserRating, results }) {
