@@ -369,13 +369,14 @@ body {
 }
 
 .movieAdd {
-  width: 2.7vw;
-  height: 9vh;
+  width: 2.5vw;
+  height: 5.4vh;
   border-radius: 50%;
   text-align: center;
   padding: 0px;
   padding-bottom: 0.4vh;
   align-content: center;
+  align-self: center;
   justify-content: center;
   background-color: #2b3035;
   color: #dee2e6;
@@ -386,6 +387,7 @@ body {
 .movieAdd:hover {
   background-color: var(--color-primary-light);
 }
+
 /*
 SPACING SYSTEM (px)
 2 / 4 / 8 / 12 / 16 / 24 / 32 / 40 / 48 / 64 / 80 / 96 / 128

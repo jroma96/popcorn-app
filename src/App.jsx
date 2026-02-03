@@ -107,12 +107,21 @@ function WatchedMovies({ watchedMovies, onRemoveMovie }) {
                 <img src={movie.img} alt={`${movie.name} poster`} />
                 <div
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
+                    paddingTop: "2vh",
+                    display: "grid",
+                    gridTemplateRows: "3fr 1fr",
+                    alignItems: "center",
+                    justifyItems: "center",
                     justifyContent: "space-around",
+                    gap: "0px",
                   }}
                 >
-                  <h3 style={{ alignContent: "center", textAlign: "center" }}>
+                  <h3
+                    style={{
+                      alignContent: "center",
+                      textAlign: "center",
+                    }}
+                  >
                     {movie.name}
                   </h3>
                   <button
@@ -159,15 +168,20 @@ function Movies({ movies, onAddMovie }) {
               <img src={movie.img} alt={`${movie.name} poster`} />
               <div
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
+                  paddingTop: "2vh",
+                  display: "grid",
+                  gridTemplateRows: "3fr 1fr",
+                  alignItems: "center",
+                  justifyItems: "center",
                   justifyContent: "space-around",
+                  gap: "0px",
                 }}
               >
                 <h3 style={{ alignContent: "center", textAlign: "center" }}>
                   {movie.name}
                 </h3>
                 <button
+                  style={{ alignContent: "center", textAlign: "center" }}
                   className="movieAdd"
                   title="Add movie"
                   onClick={() => onAddMovie(movie)}
