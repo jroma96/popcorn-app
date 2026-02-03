@@ -65,15 +65,106 @@ function Main({ children }) {
   return <main className="main">{children}</main>;
 }
 
-function WatchedMovies({ watchedMovies, onRemoveMovie }) {
+function WatchedMovieList({ movies, onRemoveMovie }) {
+  return movies.map((movie) => (
+    <li key={movie.id}>
+      <img src={movie.img} alt={`${movie.name} poster`} />
+      <div
+        style={{
+          paddingTop: "2vh",
+          display: "grid",
+          gridTemplateRows: "3fr 1fr",
+          alignItems: "center",
+          justifyItems: "center",
+          justifyContent: "space-around",
+          gap: "0px",
+        }}
+      >
+        <h3
+          style={{
+            alignContent: "center",
+            textAlign: "center",
+          }}
+        >
+          {movie.name}
+        </h3>
+        <button className="movieAdd" onClick={() => onRemoveMovie(movie.id)}>
+          -
+        </button>
+      </div>
+      <div>
+        <p>
+          <span>⭐️</span>
+          <span>{movie.imdbRating}</span>
+        </p>
+        <p>
+          <span>🌟</span>
+          <span>{movie.userRating}</span>
+        </p>
+      </div>
+    </li>
+  ));
+}
+
+function MovieList({ movies, onAddMovie }) {
+  return movies?.map((movie) => (
+    <li key={movie.id}>
+      <img src={movie.img} alt={`${movie.name} poster`} />
+      <div
+        style={{
+          paddingTop: "2vh",
+          display: "grid",
+          gridTemplateRows: "3fr 1fr",
+          alignItems: "center",
+          justifyItems: "center",
+          justifyContent: "space-around",
+          gap: "0px",
+        }}
+      >
+        <h3 style={{ alignContent: "center", textAlign: "center" }}>
+          {movie.name}
+        </h3>
+        <button
+          style={{ alignContent: "center", textAlign: "center" }}
+          className="movieAdd"
+          title="Add movie"
+          onClick={() => onAddMovie(movie)}
+        >
+          +
+        </button>
+      </div>
+      <p>
+        <span>🗓</span>
+        <span>{movie.Year}</span>
+      </p>
+    </li>
+  ));
+}
+
+function Summary({ avgImdbRating, avgUserRating, results }) {
+  return (
+    <div className="summary">
+      <h2>Movies you watched</h2>
+      <div>
+        <p>
+          <span>#️⃣</span>
+          <span>{results} movies</span>
+        </p>
+        <p>
+          <span>⭐️</span>
+          <span>{avgImdbRating}</span>
+        </p>
+        <p>
+          <span>🌟</span>
+          <span>{avgUserRating}</span>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function MoviesBox({ element, children }) {
   const [isOpen2, setIsOpen2] = useState(true);
-  console.log(watchedMovies);
-  const avgImdbRating = average(
-    watchedMovies.map((movie) => movie.imdbRating),
-  ).toFixed(2);
-  const avgUserRating = average(
-    watchedMovies.map((movie) => movie.userRating),
-  ).toFixed(2);
   return (
     <div className="box">
       <button
@@ -82,120 +173,11 @@ function WatchedMovies({ watchedMovies, onRemoveMovie }) {
       >
         {isOpen2 ? "–" : "+"}
       </button>
-      <div className="summary">
-        <h2>Movies you watched</h2>
-        <div>
-          <p>
-            <span>#️⃣</span>
-            <span>{watchedMovies.length} movies</span>
-          </p>
-          <p>
-            <span>⭐️</span>
-            <span>{avgImdbRating}</span>
-          </p>
-          <p>
-            <span>🌟</span>
-            <span>{avgUserRating}</span>
-          </p>
-        </div>
-      </div>
+      {children}
       {isOpen2 && (
         <>
-          <ul className="list">
-            {watchedMovies.map((movie) => (
-              <li key={movie.id}>
-                <img src={movie.img} alt={`${movie.name} poster`} />
-                <div
-                  style={{
-                    paddingTop: "2vh",
-                    display: "grid",
-                    gridTemplateRows: "3fr 1fr",
-                    alignItems: "center",
-                    justifyItems: "center",
-                    justifyContent: "space-around",
-                    gap: "0px",
-                  }}
-                >
-                  <h3
-                    style={{
-                      alignContent: "center",
-                      textAlign: "center",
-                    }}
-                  >
-                    {movie.name}
-                  </h3>
-                  <button
-                    className="movieAdd"
-                    onClick={() => onRemoveMovie(movie.id)}
-                  >
-                    -
-                  </button>
-                </div>
-                <div>
-                  <p>
-                    <span>⭐️</span>
-                    <span>{movie.imdbRating}</span>
-                  </p>
-                  <p>
-                    <span>🌟</span>
-                    <span>{movie.userRating}</span>
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <ul className="list">{element}</ul>
         </>
-      )}
-    </div>
-  );
-}
-
-function Movies({ movies, onAddMovie }) {
-  const [isOpen1, setIsOpen1] = useState(true);
-
-  return (
-    <div className="box">
-      <button
-        className="btn-toggle"
-        onClick={() => setIsOpen1((open) => !open)}
-      >
-        {isOpen1 ? "–" : "+"}
-      </button>
-      {isOpen1 && (
-        <ul className="list">
-          {movies?.map((movie) => (
-            <li key={movie.id}>
-              <img src={movie.img} alt={`${movie.name} poster`} />
-              <div
-                style={{
-                  paddingTop: "2vh",
-                  display: "grid",
-                  gridTemplateRows: "3fr 1fr",
-                  alignItems: "center",
-                  justifyItems: "center",
-                  justifyContent: "space-around",
-                  gap: "0px",
-                }}
-              >
-                <h3 style={{ alignContent: "center", textAlign: "center" }}>
-                  {movie.name}
-                </h3>
-                <button
-                  style={{ alignContent: "center", textAlign: "center" }}
-                  className="movieAdd"
-                  title="Add movie"
-                  onClick={() => onAddMovie(movie)}
-                >
-                  +
-                </button>
-              </div>
-              <p>
-                <span>🗓</span>
-                <span>{movie.Year}</span>
-              </p>
-            </li>
-          ))}
-        </ul>
       )}
     </div>
   );
@@ -227,7 +209,13 @@ function App() {
   const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
-
+  const results = watched.length;
+  const avgImdbRating = average(
+    watched.map((movie) => movie.imdbRating),
+  ).toFixed(2);
+  const avgUserRating = average(
+    watched.map((movie) => movie.userRating),
+  ).toFixed(2);
   function handleAddMovie(movie) {
     setWatched((arr) => [...arr, movie]);
   }
@@ -262,11 +250,23 @@ function App() {
     <div>
       <NavBar onSearch={setQuery} query={query} results={movies.length} />
       <Main>
-        <Movies movies={movies} onAddMovie={handleAddMovie} />
-        <WatchedMovies
-          watchedMovies={watched}
-          onRemoveMovie={handleRemoveMovie}
+        <MoviesBox
+          element={<MovieList movies={movies} onAddMovie={handleAddMovie} />}
         />
+        <MoviesBox
+          element={
+            <WatchedMovieList
+              movies={watched}
+              onModifyList={handleRemoveMovie}
+            />
+          }
+        >
+          <Summary
+            results={results}
+            avgImdbRating={avgImdbRating}
+            avgUserRating={avgUserRating}
+          />
+        </MoviesBox>
       </Main>
     </div>
   );
