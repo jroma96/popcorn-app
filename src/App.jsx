@@ -1,4 +1,5 @@
-import { useState, useEffect, Children } from "react";
+import { useState, useEffect } from "react";
+import StarRating from "./Stars";
 import "./App.css";
 
 const token =
@@ -259,7 +260,8 @@ function App() {
       .catch((err) => console.error(err));
   }, [query]);
   return (
-    <div>
+    <StarRating />
+    /*<div>
       <NavBar onSearch={setQuery} query={query} results={movies.length} />
       <Main>
         <MoviesBox
@@ -280,7 +282,7 @@ function App() {
           />
         </MoviesBox>
       </Main>
-    </div>
+    </div>*/
   );
 }
 
