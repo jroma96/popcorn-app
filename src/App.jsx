@@ -260,8 +260,7 @@ function App() {
       .catch((err) => console.error(err));
   }, [query]);
   return (
-    <StarRating />
-    /*<div>
+    <div>
       <NavBar onSearch={setQuery} query={query} results={movies.length} />
       <Main>
         <MoviesBox
@@ -282,7 +281,7 @@ function App() {
           />
         </MoviesBox>
       </Main>
-    </div>*/
+    </div>
   );
 }
 

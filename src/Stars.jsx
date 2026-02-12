@@ -1,4 +1,5 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 const containerStyle = {
   display: "flex",
@@ -13,12 +14,21 @@ const starCointainerStyle = {
   display: "flex",
   gap: "4px",
 };
+StarRating.propTypes = {
+  maxRating: PropTypes.number,
+  defaultRating: PropTypes.number,
+  color: PropTypes.string,
+  size: PropTypes.number,
+  className: PropTypes.string,
+};
 export default function StarRating({
   maxRating = 5,
   color = "#fcc419",
   size = 48,
+  defaultRating = 0,
+  className = "",
 }) {
-  const [rating, setRating] = useState(0);
+  const [rating, setRating] = useState(defaultRating);
   const [tempRating, setTempRating] = useState(0);
   function handleClick(i) {
     setRating(i + 1);
@@ -26,12 +36,12 @@ export default function StarRating({
   function handleMouseEnter(i) {
     setTempRating(i);
   }
-  function handleMouseLeave(i) {
+  function handleMouseLeave() {
     setTempRating(0);
   }
   return (
     <div style={containerStyle}>
-      <div style={starCointainerStyle}>
+      <div style={starCointainerStyle} className={className}>
         {Array.from({ length: maxRating }, (_, i) => (
           <Star
             color={color}
