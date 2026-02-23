@@ -113,10 +113,10 @@ function WatchedMovieList({ movies, onRemoveMovie }) {
   );
 }
 
-function MovieList({ movies, onAddMovie }) {
+function MovieList({ movies, onAddMovie, onSelectMovie }) {
   return movies.length > 0 ? (
     movies.map((movie) => (
-      <li key={movie.id}>
+      <li key={movie.id} onClick={() => onSelectMovie(movie.id)}>
         <img src={movie.img} alt={`${movie.name} poster`} />
         <div
           style={{
@@ -231,12 +231,22 @@ function ErrorMessage({ message }) {
   );
 }
 
+function SelectedMovie({ selectedId, movies }) {
+  const [isLoading, setIsLoading] = useState(false);
+  return (
+    <div>
+      <img src={movies.find((item) => item.id === selectedId).img} />
+    </div>
+  );
+}
+
 function App() {
   const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedMovie, setSelectedMovie] = useState(36647);
   const results = watched.length;
   const avgImdbRating = average(
     watched.map((movie) => movie.imdbRating),
@@ -327,25 +337,37 @@ function App() {
       <Main>
         {!isLoading && error === "" && (
           <MoviesBox
-            element={<MovieList movies={movies} onAddMovie={handleAddMovie} />}
+            element={
+              <MovieList
+                movies={movies}
+                onAddMovie={handleAddMovie}
+                onSelectMovie={setSelectedMovie}
+              />
+            }
           />
         )}
         {isLoading && <Loader />}
         {error !== "" && <ErrorMessage message={error} />}
-        <MoviesBox
-          element={
-            <WatchedMovieList
-              movies={watched}
-              onModifyList={handleRemoveMovie}
+        {selectedMovie ? (
+          <MoviesBox>
+            <SelectedMovie selectedId={selectedMovie} movies={movies} />
+          </MoviesBox>
+        ) : (
+          <MoviesBox
+            element={
+              <WatchedMovieList
+                movies={watched}
+                onModifyList={handleRemoveMovie}
+              />
+            }
+          >
+            <Summary
+              results={results}
+              avgImdbRating={avgImdbRating}
+              avgUserRating={avgUserRating}
             />
-          }
-        >
-          <Summary
-            results={results}
-            avgImdbRating={avgImdbRating}
-            avgUserRating={avgUserRating}
-          />
-        </MoviesBox>
+          </MoviesBox>
+        )}
       </Main>
     </div>
   );
