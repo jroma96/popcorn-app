@@ -218,10 +218,25 @@ function NavBar({ query, onSearch, results }) {
   );
 }
 
+function Loader() {
+  return <p className="Loader">Loading...</p>;
+}
+
+function ErrorMessage({ message }) {
+  return (
+    <p className="error">
+      <span>🔥</span>
+      {message}
+    </p>
+  );
+}
+
 function App() {
   const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const results = watched.length;
   const avgImdbRating = average(
     watched.map((movie) => movie.imdbRating),
@@ -229,6 +244,44 @@ function App() {
   const avgUserRating = average(
     watched.map((movie) => movie.userRating),
   ).toFixed(2);
+
+  function handleSetQuery(value) {
+    setQuery(value);
+    const query = value;
+    const url =
+      "https://api.themoviedb.org/3/search/movie?query=" +
+      query +
+      "&include_adult=false&language=en-US&page=1";
+    setIsLoading(true);
+    async function fetchMovies() {
+      try {
+        setIsLoading(true);
+        const res = await fetch(url, options);
+        if (!res.ok) throw new Error("Check your internet connection");
+        setError("");
+        const data = await res.json();
+        const imgUrl = "https://image.tmdb.org/t/p/original";
+        const movies = data.results.map((item) => ({
+          id: item.id,
+          name: item.original_title,
+          img: imgUrl + item.poster_path,
+          Year: item.release_date.split("-")[0],
+          imdbRating: item.vote_average,
+          userRating: item.popularity,
+        }));
+
+        setMovies(movies);
+      } catch (err) {
+        console.error(err.message);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchMovies();
+    setIsLoading(false);
+  }
+
   function handleAddMovie(movie) {
     setWatched((arr) => [...arr, movie]);
   }
@@ -238,16 +291,19 @@ function App() {
   }
 
   useEffect(() => {
-    const url =
-      "https://api.themoviedb.org/3/search/movie?query=" +
-      query +
-      "&include_adult=false&language=en-US&page=1";
-    fetch(url, options)
-      .then((res) => res.json())
-      .then((json) => {
-        console.log(json.results);
+    async function fetchMovies() {
+      try {
+        const url =
+          "https://api.themoviedb.org/3/search/movie?query=" +
+          "interstellar" +
+          "&include_adult=false&language=en-US&page=1";
+        setIsLoading(true);
+        const res = await fetch(url, options);
+        if (!res.ok) throw new Error("Check your internet connection");
+        setError("");
+        const data = await res.json();
         const imgUrl = "https://image.tmdb.org/t/p/original";
-        const movies = json.results.map((item) => ({
+        const movies = data.results.map((item) => ({
           id: item.id,
           name: item.original_title,
           img: imgUrl + item.poster_path,
@@ -256,16 +312,26 @@ function App() {
           userRating: item.popularity,
         }));
         setMovies(movies);
-      })
-      .catch((err) => console.error(err));
-  }, [query]);
+      } catch (err) {
+        console.error(err.message);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchMovies();
+  }, []);
   return (
     <div>
-      <NavBar onSearch={setQuery} query={query} results={movies.length} />
+      <NavBar onSearch={handleSetQuery} query={query} results={movies.length} />
       <Main>
-        <MoviesBox
-          element={<MovieList movies={movies} onAddMovie={handleAddMovie} />}
-        />
+        {!isLoading && error === "" && (
+          <MoviesBox
+            element={<MovieList movies={movies} onAddMovie={handleAddMovie} />}
+          />
+        )}
+        {isLoading && <Loader />}
+        {error !== "" && <ErrorMessage message={error} />}
         <MoviesBox
           element={
             <WatchedMovieList
