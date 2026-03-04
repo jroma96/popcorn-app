@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 
 const containerStyle = {
@@ -9,6 +9,7 @@ const containerStyle = {
 const textStyle = {
   lineHeight: "1",
   margin: "0",
+  width: "10px",
 };
 const starCointainerStyle = {
   display: "flex",
@@ -28,8 +29,16 @@ export default function StarRating({
   defaultRating = 0,
   className = "",
 }) {
-  const [rating, setRating] = useState(defaultRating);
+  const [rating, setRating] = useState(0);
   const [tempRating, setTempRating] = useState(0);
+
+  useEffect(() => {
+    async function syncStars() {
+      setRating(defaultRating);
+    }
+    syncStars();
+  }, [defaultRating]);
+
   function handleClick(i) {
     setRating(i + 1);
   }

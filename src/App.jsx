@@ -1,16 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import StarRating from "./Stars";
+import useMovies from "./useMovies";
 import "./App.css";
-
-const token =
-  "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1MWY1NjU1NjNlM2ZjYmIyMWE3YThkMmU5NTM3NDRiOSIsIm5iZiI6MTc2OTcyMzYzNS4yNTIsInN1YiI6IjY5N2JkNmYzOWZiZWNmY2RmMzJhMzE0ZCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.Bvc1Q0wgmXZd0eeGRj2CsZ7JkUwJbsgAXG9x0SjFwjI";
-const options = {
-  method: "GET",
-  headers: {
-    accept: "application/json",
-    Authorization: "Bearer " + token,
-  },
-};
 
 /*const tempMovieData = [
   {
@@ -136,7 +127,7 @@ function MovieList({ movies, onAddMovie, onSelectMovie }) {
             style={{ alignContent: "center", textAlign: "center" }}
             className="movieAdd"
             title="Add movie"
-            onClick={() => onAddMovie(movie)}
+            onClick={(e) => onAddMovie(e, movie)}
           >
             +
           </button>
@@ -197,6 +188,19 @@ function MoviesBox({ element, children }) {
 }
 
 function NavBar({ query, onSearch, results }) {
+  const el = useRef(null);
+
+  useEffect(() => {
+    function callback(e) {
+      if (document.activeElement === el.current) return;
+      if (e.code === "Enter") {
+        el.current.focus();
+        onSearch("");
+      }
+    }
+    document.addEventListener("keydown", callback);
+    return () => document.removeEventListener("keydown", callback);
+  }, [onSearch]);
   return (
     <div className="nav-bar">
       <div className="logo">
@@ -209,6 +213,7 @@ function NavBar({ query, onSearch, results }) {
         type="text"
         placeholder="Search movies..."
         value={query}
+        ref={el}
         onChange={(e) => {
           onSearch(e.target.value);
         }}
@@ -231,22 +236,86 @@ function ErrorMessage({ message }) {
   );
 }
 
-function SelectedMovie({ selectedId, movies }) {
-  const [isLoading, setIsLoading] = useState(false);
+function SelectedMovie({ current, onHide }) {
+  useEffect(() => {
+    if (current.name !== undefined) document.title = "Movie | " + current.name;
+
+    return () => {
+      document.title = "popcornApp";
+    };
+  }, [current]);
+  useEffect(() => {
+    function callBack(e) {
+      if (e.code === "Escape") {
+        onHide("");
+      }
+    }
+    document.addEventListener("keydown", callBack);
+    return () => document.removeEventListener("keydown", callBack);
+  }, [onHide]);
   return (
-    <div>
-      <img src={movies.find((item) => item.id === selectedId).img} />
+    <div className="movie-display">
+      <div style={{ alignContent: "center" }}>
+        <img src={current.img} />
+
+        <h3
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            paddingTop: "5px",
+            fontSize: "25px",
+            height: "15%",
+          }}
+        >
+          {current.name}
+        </h3>
+        <div className="rating">
+          <StarRating
+            maxRating={10}
+            size={24}
+            defaultRating={current.imdbRating}
+          />
+        </div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+        <p
+          style={{
+            paddingLeft: "25px",
+            paddingRight: "25px",
+            paddingTop: "10px",
+            fontSize: "15px",
+            height: "40%",
+            maxHeight: "60%",
+          }}
+        >
+          {current.plot}
+        </p>
+        <button
+          style={{
+            height: "27px",
+            width: "30px",
+            alignSelf: "center",
+            justifySelf: "center",
+          }}
+          onClick={() => onHide("")}
+        >
+          X
+        </button>
+      </div>
     </div>
   );
 }
 
 function App() {
   const [query, setQuery] = useState("");
-  const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [selectedMovie, setSelectedMovie] = useState(36647);
+  const [movies, isLoading, error] = useMovies(
+    "https://api.themoviedb.org/3/search/movie?query=",
+    query,
+  );
+  const [watched, setWatched] = useState(() =>
+    JSON.parse(localStorage.getItem("watched")),
+  );
+  const [selectedMovie, setSelectedMovie] = useState("");
   const results = watched.length;
   const avgImdbRating = average(
     watched.map((movie) => movie.imdbRating),
@@ -255,109 +324,61 @@ function App() {
     watched.map((movie) => movie.userRating),
   ).toFixed(2);
 
-  function handleSetQuery(value) {
-    setQuery(value);
-    const query = value;
-    const url =
-      "https://api.themoviedb.org/3/search/movie?query=" +
-      query +
-      "&include_adult=false&language=en-US&page=1";
-    setIsLoading(true);
-    async function fetchMovies() {
-      try {
-        setIsLoading(true);
-        const res = await fetch(url, options);
-        if (!res.ok) throw new Error("Check your internet connection");
-        setError("");
-        const data = await res.json();
-        const imgUrl = "https://image.tmdb.org/t/p/original";
-        const movies = data.results.map((item) => ({
-          id: item.id,
-          name: item.original_title,
-          img: imgUrl + item.poster_path,
-          Year: item.release_date.split("-")[0],
-          imdbRating: item.vote_average,
-          userRating: item.popularity,
-        }));
-
-        setMovies(movies);
-      } catch (err) {
-        console.error(err.message);
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
+  function handleSelectMovie(id) {
+    if (movies.find((movie) => movie.id === id) !== null) {
+      setSelectedMovie((s) =>
+        s.id === id ? "" : movies.find((movie) => movie.id === id),
+      );
     }
-    fetchMovies();
-    setIsLoading(false);
   }
 
-  function handleAddMovie(movie) {
-    setWatched((arr) => [...arr, movie]);
+  function handleSetQuery(value) {
+    setQuery(value);
+  }
+
+  function handleAddMovie(e, movie) {
+    e.stopPropagation();
+    if (watched.findIndex((item) => item.id === movie.id) === -1) {
+      setWatched((arr) => [...arr, movie]);
+      localStorage.setItem("watched", JSON.stringify([...watched, movie]));
+    }
   }
 
   function handleRemoveMovie(id) {
-    setWatched((arr) => arr.filter((item) => item.id != id));
+    setWatched((arr) => arr.filter((item) => item.id !== id));
   }
 
   useEffect(() => {
-    async function fetchMovies() {
-      try {
-        const url =
-          "https://api.themoviedb.org/3/search/movie?query=" +
-          "interstellar" +
-          "&include_adult=false&language=en-US&page=1";
-        setIsLoading(true);
-        const res = await fetch(url, options);
-        if (!res.ok) throw new Error("Check your internet connection");
-        setError("");
-        const data = await res.json();
-        const imgUrl = "https://image.tmdb.org/t/p/original";
-        const movies = data.results.map((item) => ({
-          id: item.id,
-          name: item.original_title,
-          img: imgUrl + item.poster_path,
-          Year: item.release_date.split("-")[0],
-          imdbRating: item.vote_average,
-          userRating: item.popularity,
-        }));
-        setMovies(movies);
-      } catch (err) {
-        console.error(err.message);
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchMovies();
-  }, []);
+    localStorage.setItem("watched", JSON.stringify(watched));
+  }, [watched]);
+
   return (
     <div>
       <NavBar onSearch={handleSetQuery} query={query} results={movies.length} />
       <Main>
+        {isLoading && <MoviesBox element={<Loader />} />}
         {!isLoading && error === "" && (
           <MoviesBox
             element={
               <MovieList
                 movies={movies}
                 onAddMovie={handleAddMovie}
-                onSelectMovie={setSelectedMovie}
+                onSelectMovie={handleSelectMovie}
               />
             }
           />
         )}
-        {isLoading && <Loader />}
         {error !== "" && <ErrorMessage message={error} />}
         {selectedMovie ? (
           <MoviesBox>
-            <SelectedMovie selectedId={selectedMovie} movies={movies} />
+            <SelectedMovie current={selectedMovie} onHide={setSelectedMovie} />
           </MoviesBox>
         ) : (
           <MoviesBox
             element={
               <WatchedMovieList
                 movies={watched}
-                onModifyList={handleRemoveMovie}
+                onRemoveMovie={handleRemoveMovie}
               />
             }
           >
