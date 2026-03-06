@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import StarRating from "./Stars";
 import useMovies from "./useMovies";
 import "./App.css";
+import useStorage from "./useStorage";
+import useKey from "./useKey";
 
 /*const tempMovieData = [
   {
@@ -190,17 +192,15 @@ function MoviesBox({ element, children }) {
 function NavBar({ query, onSearch, results }) {
   const el = useRef(null);
 
-  useEffect(() => {
-    function callback(e) {
-      if (document.activeElement === el.current) return;
-      if (e.code === "Enter") {
-        el.current.focus();
-        onSearch("");
-      }
+  function callback(e) {
+    if (document.activeElement === el.current) return;
+    if (e.code === "Enter") {
+      el.current.focus();
+      onSearch("");
     }
-    document.addEventListener("keydown", callback);
-    return () => document.removeEventListener("keydown", callback);
-  }, [onSearch]);
+  }
+
+  useKey("Enter", callback);
   return (
     <div className="nav-bar">
       <div className="logo">
@@ -237,6 +237,12 @@ function ErrorMessage({ message }) {
 }
 
 function SelectedMovie({ current, onHide }) {
+  function callBack(e, key) {
+    if (e.code.toLowerCase() === key.toLowerCase()) {
+      onHide("");
+    }
+  }
+
   useEffect(() => {
     if (current.name !== undefined) document.title = "Movie | " + current.name;
 
@@ -244,15 +250,7 @@ function SelectedMovie({ current, onHide }) {
       document.title = "popcornApp";
     };
   }, [current]);
-  useEffect(() => {
-    function callBack(e) {
-      if (e.code === "Escape") {
-        onHide("");
-      }
-    }
-    document.addEventListener("keydown", callBack);
-    return () => document.removeEventListener("keydown", callBack);
-  }, [onHide]);
+  useKey("Escape", callBack);
   return (
     <div className="movie-display">
       <div style={{ alignContent: "center" }}>
@@ -312,9 +310,7 @@ function App() {
     "https://api.themoviedb.org/3/search/movie?query=",
     query,
   );
-  const [watched, setWatched] = useState(() =>
-    JSON.parse(localStorage.getItem("watched")),
-  );
+  const [watched, setWatched] = useStorage("watched");
   const [selectedMovie, setSelectedMovie] = useState("");
   const results = watched.length;
   const avgImdbRating = average(
@@ -340,17 +336,12 @@ function App() {
     e.stopPropagation();
     if (watched.findIndex((item) => item.id === movie.id) === -1) {
       setWatched((arr) => [...arr, movie]);
-      localStorage.setItem("watched", JSON.stringify([...watched, movie]));
     }
   }
 
   function handleRemoveMovie(id) {
     setWatched((arr) => arr.filter((item) => item.id !== id));
   }
-
-  useEffect(() => {
-    localStorage.setItem("watched", JSON.stringify(watched));
-  }, [watched]);
 
   return (
     <div>
